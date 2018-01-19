@@ -1,0 +1,2 @@
+# tSocrata
+Socrata Talend connector

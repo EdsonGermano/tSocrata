@@ -1,0 +1,88 @@
+<%@ jet
+imports="
+    	org.talend.core.model.process.INode
+    	org.talend.core.model.process.ElementParameterParser
+  		org.talend.core.model.metadata.IMetadataTable
+  		org.talend.core.model.metadata.IMetadataColumn
+  		org.talend.designer.codegen.config.CodeGeneratorArgument
+  		org.talend.core.model.process.IConnection
+  		org.talend.core.model.process.IConnectionCategory
+  		org.talend.core.model.metadata.types.JavaTypesManager
+  		org.talend.core.model.metadata.types.JavaType
+      java.util.Map
+      java.util.List
+"
+%>
+
+<%
+    CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+    INode node = (INode)codeGenArgument.getArgument();
+    String cid = node.getUniqueName();
+    String url = ElementParameterParser.getValue(node,"__URL__");
+    String method = ElementParameterParser.getValue(node,"__METHOD__");
+    String username = ElementParameterParser.getValue(node,"__USR__");
+    String password = ElementParameterParser.getValue(node,"__PWD__");
+    String domain = ElementParameterParser.getValue(node,"__DOMAIN__");
+    String file = ElementParameterParser.getValue(node,"__FILE__");
+    String datasetName = ElementParameterParser.getValue(node,"__DSNAME__");
+    boolean setAsideErrors = "true".equals(ElementParameterParser.getValue(node, "__IGNERRORS__"));
+%>
+// Constants
+System.out.println("Initializing DataSync...");
+String appToken = "Eu1EiCmxZN4DWT9UmiXCLQpl6";
+String endpoint_<%=cid%> = <%=url%>;
+String file_<%=cid%> = <%=file%>;
+java.util.List<String> fieldNames = new java.util.ArrayList<String>();
+java.util.Set<String> flowFieldNames = new java.util.LinkedHashSet<String>();
+java.util.Set<String> ignoreColumns;
+// Tests
+// Test if endpoint is valid
+if(!com.socrata.datasync.Utils.uidIsValid(endpoint_<%=cid%>)) {
+  throw new Exception("Dataset ID "+endpoint_<%=cid%>+" is invalid! Is it in the format a1b2-c3d4?");
+}
+// Test if file is empty or exists
+if(file_<%=cid%>.equals(""))
+    throw new Exception("Requires file path!");
+java.io.File publishFile = new java.io.File(file_<%=cid%>);
+if(!publishFile.exists() || publishFile.isDirectory()) {
+    throw new Exception(file_<%=cid%> + ": File to publish does not exist or is a directory");
+}
+
+System.out.println("    Generating Config Information...");
+// Declare user preferences and set configurations
+com.socrata.datasync.config.userpreferences.UserPreferencesLib userprefs_<%=cid%> = new com.socrata.datasync.config.userpreferences.UserPreferencesLib();
+userprefs_<%=cid%>.setDomain(<%=domain%>);
+userprefs_<%=cid%>.setUsername(<%=username%>);
+userprefs_<%=cid%>.setPassword(<%=password%>);
+userprefs_<%=cid%>.setAppToken(appToken);
+userprefs_<%=cid%>.load();
+
+System.out.println("    Generating Control Information...");
+// Set control information from CSV file
+// TODO: Can schema be transferred between subjobs?
+java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(file_<%=cid%>));
+String firstLine = br.readLine();
+// Get Socrata Dataset Information
+com.socrata.model.importer.Dataset dataset = com.socrata.datasync.DatasetUtils.getDatasetInfo(userprefs_<%=cid%>, endpoint_<%=cid%>,com.socrata.model.importer.Dataset.class);
+// Get columns from Socrata dataset
+java.util.List<com.socrata.model.importer.Column> columns = dataset.getColumns();
+// Add columns to arraylist
+for (com.socrata.model.importer.Column c : columns) {
+    fieldNames.add(c.getFieldName());
+}
+// Get columns from talend output
+String[] flowColumns = firstLine.replaceAll("[^A-Za-z0-9,\"]+", "_").toLowerCase().split(",");
+for (String col : flowColumns) {
+  flowFieldNames.add(col);
+}
+// Assume all columns are to be ignored
+ignoreColumns = new java.util.HashSet<String>(flowFieldNames);
+// Remove the dataset field names
+ignoreColumns.removeAll(fieldNames);
+System.out.println("Ignoring columns: "+ignoreColumns);
+// Set Datasync Method
+com.socrata.datasync.PublishMethod datasync_method_<%=cid%> = com.socrata.datasync.PublishMethod.valueOf("<%=method%>".toLowerCase());
+// Generate Control Information
+com.socrata.datasync.config.controlfile.ControlFile control_<%=cid%> = com.socrata.datasync.config.controlfile.ControlFile.generateControlFile(file_<%=cid%>.toString(), datasync_method_<%=cid%>, null, true, true);
+control_<%=cid%>.csv.setAsideErrors = <%=setAsideErrors%>;
+control_<%=cid%>.csv.ignoreColumns(ignoreColumns.toArray(new String[ignoreColumns.size()]));

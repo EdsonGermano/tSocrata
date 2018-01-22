@@ -1,0 +1,80 @@
+<COMPONENT>
+  <HEADER
+    PLATEFORM="ALL"
+    SERIAL=""
+    VERSION="0.1"
+    STATUS="ALPHA"
+
+    COMPATIBILITY="ALL"
+    AUTHOR="Peter Moore"
+    RELEASE_DATE="20180101A"
+    STARTABLE="true"
+  >
+    <SIGNATURE/>
+  </HEADER>
+
+  <FAMILIES>
+    <FAMILY>Internet</FAMILY>
+  </FAMILIES>
+
+  <DOCUMENTATION>
+    <URL/>
+  </DOCUMENTATION>
+
+  <CONNECTORS>
+    <CONNECTOR CTYPE="FLOW" MAX_INPUT="0" MAX_OUTPUT="1"/>
+    <CONNECTOR CTYPE="ITERATE" MAX_OUTPUT="1" MAX_INPUT="1"/>
+    <CONNECTOR CTYPE="SUBJOB_OK" MAX_INPUT="1" />
+    <CONNECTOR CTYPE="SUBJOB_ERROR" MAX_INPUT="1" />
+    <CONNECTOR CTYPE="COMPONENT_OK" />
+    <CONNECTOR CTYPE="COMPONENT_ERROR" />
+    <CONNECTOR CTYPE="RUN_IF" />
+  </CONNECTORS>
+
+  <PARAMETERS>
+    <!-- URL, Username, Password Parameters -->
+    <PARAMETER NAME="DOMAIN" FIELD="TEXT" REQUIRED="true" NUM_ROW="15">
+      <DEFAULT>""</DEFAULT>
+    </PARAMETER>
+    <PARAMETER NAME="URL" FIELD="TEXT" REQUIRED="true" NUM_ROW="20">
+      <DEFAULT>""</DEFAULT>
+    </PARAMETER>
+    <PARAMETER NAME="USR" FIELD="TEXT" NUM_ROW="30" REQUIRED="true">
+        <DEFAULT>""</DEFAULT>
+    </PARAMETER>
+    <!-- Figure out what a password field is -->
+    <PARAMETER NAME="PWD" FIELD="TEXT" NUM_ROW="31" REQUIRED="true">
+        <DEFAULT>""</DEFAULT>
+    </PARAMETER>
+    <PARAMETER NAME="FILE" FIELD="TEXT" NUM_ROW="32" REQUIRED="true">
+        <DEFAULT>""</DEFAULT>
+    </PARAMETER>
+
+    <!-- Datasync Methods -->
+    <PARAMETER NAME="METHOD" FIELD="CLOSED_LIST" NUM_ROW="50">
+          <ITEMS DEFAULT="Replace">
+            <ITEM NAME="Replace"   VALUE="replace" />
+            <ITEM NAME="Upsert"   VALUE="upsert" />
+            <ITEM NAME="Delete"   VALUE="delete" />
+            <ITEM NAME="Append"   VALUE="append" />
+          </ITEMS>
+      </PARAMETER>
+
+      <!--Ignore Row Errors-->
+      <PARAMETER NAME="IGNERRORS" FIELD="CHECK" NUM_ROW="50">
+          <DEFAULT>false</DEFAULT>
+      </PARAMETER>
+  </PARAMETERS>
+
+  <CODEGENERATION>
+		<IMPORTS>
+			<IMPORT NAME="data_sync" MODULE="DataSync-1.8.2.jar" REQUIRED="true" />
+      <IMPORT NAME="soda_java" MODULE="soda-api-java-0.10.0.jar" REQUIRED="true" />
+		</IMPORTS>
+	</CODEGENERATION>
+
+  <RETURNS>
+    <RETURN NAME="NB_STATUS_CODE" TYPE="id_Integer" AVAILABILITY="AFTER"/>
+  </RETURNS>
+
+</COMPONENT>

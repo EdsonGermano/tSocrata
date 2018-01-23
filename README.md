@@ -1,5 +1,6 @@
 # tSocrata
 Socrata Talend Connector
+
 Authors: Peter Moore
 
 ## Setup with Talend
@@ -7,6 +8,7 @@ Download and install [Open Studio for Data Integration](https://www.talend.com/p
 
 For Mac you may have to run it from the command line:
 `$ cd TOS_DI-{your version}/TOS_DI-macosx-cocoa.app/Contents/MacOS/
+
 $ ./TOS_DI-macosx-cocoa`
 
 ## Setup development components
